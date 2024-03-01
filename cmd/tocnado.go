@@ -37,7 +37,37 @@ func newHeadline(rawHeadline string) Headline {
 }
 
 type TableOfContent struct {
-	headlines []Headline
+	rawHeadlines []Headline
+}
+
+// func newTableOfContent(headlines []Headline) TableOfContent {
+//
+// 	tableOfContent := TableOfContent{
+// 		rawHeadlines: headlines,
+// 	}
+// }
+
+func createBulletPoint(level int) string {
+
+	bulletPoint := ""
+
+	for i := 1; i < level; i++ {
+		bulletPoint += "\t"
+	}
+
+	bulletPoint += "-"
+
+	return bulletPoint
+}
+
+func printTableOfContent(headlines []Headline) {
+	for _, headline := range headlines {
+		if headline.level == 1 {
+			continue
+		}
+		offset := headline.level - 1
+		fmt.Println(createBulletPoint(offset), headline.anchorLink)
+	}
 }
 
 func getFileLines(filePath string) ([]string, error) {
@@ -75,8 +105,32 @@ func getHeadlines(lines []string) []Headline {
 	return headlines
 }
 
+func validateInput(arg string) {
+
+	if !strings.HasSuffix(arg, ".md") {
+		fmt.Println("Please provide a markdown file")
+		os.Exit(1)
+	}
+
+	if _, err := os.Stat(arg); os.IsNotExist(err) {
+		fmt.Println("File does not exist")
+		os.Exit(1)
+	}
+}
+
 func main() {
-	filePath := "test.md"
+
+	args := os.Args
+
+	if len(args) < 2 {
+		fmt.Println("Please provide a file name")
+		os.Exit(1)
+	}
+
+	filePath := os.Args[1]
+
+	validateInput(filePath)
+
 	lines, err := getFileLines(filePath)
 	if err != nil {
 		fmt.Println(err)
@@ -84,7 +138,5 @@ func main() {
 
 	headlines := getHeadlines(lines)
 
-	for _, headline := range headlines {
-		fmt.Println(headline.anchorLink)
-	}
+	printTableOfContent(headlines)
 }
